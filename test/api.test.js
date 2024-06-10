@@ -1,6 +1,6 @@
 import request from 'supertest';
 import fs from 'fs';
-import { app } from '../server.js';
+import { app, server } from '../server.js';
 
 describe('Users API', () => {
     before(() => {
@@ -26,8 +26,16 @@ describe('Users API', () => {
             .end((err, res) => {
                 if (err) return done(err);
                 console.log(res.body); // Log the response body
-                // Assert against the response body as needed
+                // Ensure response body contains the created user
+                if (!res.body.users.some(user => user.name === 'John D')) {
+                    return done(new Error('User not found'));
+                }
                 done();
             });
+    });
+
+    after(() => {
+        // Stop the server after all tests are complete
+        server.close();
     });
 });
