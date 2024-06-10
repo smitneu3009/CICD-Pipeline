@@ -1,26 +1,46 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import userRoutes from './routes/userRoutes.js';
-
-dotenv.config();
+import fs from 'fs';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+const DATA_FILE_PATH = 'data.json';
 
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
-
+// Middleware to parse JSON requests
 app.use(express.json());
 
-// Import routes
-app.use('/api/users', userRoutes);
+// Routes
+app.get('/api/users', (req, res) => {
+    try {
+        // Read data from the JSON file
+        const data = JSON.parse(fs.readFileSync(DATA_FILE_PATH, 'utf-8'));
+        res.json(data);
+    } catch (err) {
+        console.error('Error reading data file:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.post('/api/users', (req, res) => {
+    try {
+        // Read data from the JSON file
+        const data = JSON.parse(fs.readFileSync(DATA_FILE_PATH, 'utf-8'));
+
+        // Add new user
+        const newUser = req.body;
+        data.users.push(newUser);
+
+        // Write data back to the JSON file
+        fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data));
+
+        res.status(201).json(newUser);
+    } catch (err) {
+        console.error('Error reading or writing data file:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
 export { app };
