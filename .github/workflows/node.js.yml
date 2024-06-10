@@ -21,5 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Jest tests
+      - name: Run jest tests
         run: npm test
+
+      - name: Set exit status
+        run: exit $?
